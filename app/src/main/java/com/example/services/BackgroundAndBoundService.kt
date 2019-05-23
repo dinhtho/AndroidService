@@ -5,14 +5,12 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import com.example.services.MyService.MyBinder
 
 
-
-class MyService : Service() {
+class BackgroundAndBoundService : Service() {
     private val mBinder = MyBinder()
 
-    private val TAG = "MyService";
+    private val TAG = "BackgroundBoundService";
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate: ");
@@ -39,7 +37,7 @@ class MyService : Service() {
     }
 
     inner class MyBinder : Binder() {
-         val service: MyService
-             get() = this@MyService
+         val service: BackgroundAndBoundService
+             get() = this@BackgroundAndBoundService
     }
 }
