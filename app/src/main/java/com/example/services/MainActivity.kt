@@ -26,13 +26,18 @@ class MainActivity : AppCompatActivity() {
         bt_unbind.setOnClickListener { unbindService(serviceConnection) }
     }
 
+    private val TAG = "MainActivity";
+
+    private lateinit var myService:MyService
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(p0: ComponentName?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            Log.d(TAG, "onServiceDisconnected: " + p0.toString());
         }
 
-        override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        override fun onServiceConnected(p0: ComponentName?, binder: IBinder?) {
+            myService = (binder as MyService.MyBinder).service
+            Log.d(TAG, "onServiceConnected: ");
         }
     }
 //
