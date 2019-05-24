@@ -17,6 +17,7 @@
             android:exported="false">
         </service>
         <service android:name=".ForeGroundService"/>
+        <service android:name=".MyIntentService"/>
 
         <activity android:name=".MainActivity">
             <intent-filter>

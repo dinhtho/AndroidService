@@ -1,12 +1,10 @@
 package com.example.services
 
+import android.content.*
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.content.Intent
-import android.content.ComponentName
-import android.content.Context
-import android.content.ServiceConnection
 import android.os.IBinder
+import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -21,6 +19,8 @@ class MainActivity : AppCompatActivity() {
 
         val foregroundIntent = Intent(this, ForeGroundService::class.java)
 
+        val intentServiceIntent = Intent(this, MyIntentService::class.java)
+
         bt_start.setOnClickListener { startService(intent) }
         bt_stop.setOnClickListener { stopService(intent) }
         bt_bind.setOnClickListener { bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE) }
@@ -32,6 +32,14 @@ class MainActivity : AppCompatActivity() {
         bt_stop_foreground.setOnClickListener {
             stopService(foregroundIntent)
         }
+
+        bt_start_intent_service.setOnClickListener {
+            startService(intentServiceIntent)
+        }
+
+
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(mMessageReceiver, IntentFilter(MyIntentService.MY_INTENT_SERVICE))
 
     }
 
@@ -49,26 +57,19 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "onServiceConnected: ");
         }
     }
-//    private fun startInForeground() {
-//        val notificationIntent = Intent(this, ForeGroundService::class.java)
-//        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
-//        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-//            .setSmallIcon(R.drawable.shsl_notification)
-//            .setContentTitle("TEST")
-//            .setContentText("HELLO")
-//            .setTicker("TICKER")
-//            .setContentIntent(pendingIntent)
-//        val notification = builder.build()
-//        if (Build.VERSION.SDK_INT >= 26) {
-//            val channel = NotificationChannel(
-//                NOTIFICATION_CHANNEL_ID,
-//                NOTIFICATION_CHANNEL_NAME,
-//                NotificationManager.IMPORTANCE_DEFAULT
-//            )
-//            channel.description = NOTIFICATION_CHANNEL_DESC
-//            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//            notificationManager.createNotificationChannel(channel)
-//        }
-//        startForeground(NOTIFICATION_ID, notification)
-//    }
+
+    private val mMessageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            // Get extra data included in the Intent
+            val message = intent.getStringExtra(MyIntentService.BROADCAST_MESSAGE)
+            tv_intent_service.text = message
+        }
+    }
+
+    override fun onDestroy() {
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver)
+        super.onDestroy()
+    }
+
 }
