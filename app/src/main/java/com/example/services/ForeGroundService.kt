@@ -1,17 +1,19 @@
 package com.example.services
 
-import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
-import android.app.PendingIntent
 import android.R
-import android.app.Notification
+import android.app.*
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.os.Build
+import android.support.annotation.RequiresApi
+import android.support.v4.app.NotificationCompat.PRIORITY_MIN
 import android.util.Log
 import android.widget.Toast
-
 
 
 /**
@@ -20,109 +22,61 @@ import android.widget.Toast
 
 
 class ForeGroundService : Service() {
+    private val TAG = "ForeGroundService";
+    override fun onCreate() {
+        super.onCreate()
+        Log.d(TAG, "onCreate: ");
+    }
 
     override fun onBind(intent: Intent): IBinder? {
         // TODO: Return the communication channel to the service.
         throw UnsupportedOperationException("Not yet implemented")
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        Log.d(TAG_FOREGROUND_SERVICE, "My foreground service onCreate().")
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent != null) {
-            val action = intent.action
+        startForeground()
+        Log.d(TAG, "onStartCommand: ");
+        return Service.START_STICKY
+    }
 
-            when (action) {
-                ACTION_START_FOREGROUND_SERVICE -> {
-                    startForegroundService()
-                    Toast.makeText(applicationContext, "Foreground service is started.", Toast.LENGTH_LONG).show()
-                }
-                ACTION_STOP_FOREGROUND_SERVICE -> {
-                    stopForegroundService()
-                    Toast.makeText(applicationContext, "Foreground service is stopped.", Toast.LENGTH_LONG).show()
-                }
-                ACTION_PLAY -> Toast.makeText(applicationContext, "You click Play button.", Toast.LENGTH_LONG).show()
-                ACTION_PAUSE -> Toast.makeText(applicationContext, "You click Pause button.", Toast.LENGTH_LONG).show()
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy: ");
+    }
+
+
+    private fun startForeground() {
+        val channelId =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                createNotificationChannel("my_service", "My Background Service")
+            } else {
+                // If earlier version channel ID is not used
+                // https://developer.android.com/reference/android/support/v4/app/NotificationCompat.Builder.html#NotificationCompat.Builder(android.content.Context)
+                ""
             }
-        }
-        return super.onStartCommand(intent, flags, startId)
+
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+        val notification = notificationBuilder.setOngoing(true)
+            .setSmallIcon(R.drawable.ic_dialog_alert)
+            .setContentTitle("My ForegroundService")
+            .setPriority(PRIORITY_MIN)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .build()
+        startForeground(101, notification)
     }
 
-    /* Used to build and start foreground service. */
-    private fun startForegroundService() {
-        Log.d(TAG_FOREGROUND_SERVICE, "Start foreground service.")
-
-        // Create notification default intent.
-        val intent = Intent()
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
-
-        // Create notification builder.
-        val builder = NotificationCompat.Builder(this)
-
-        // Make notification show big text.
-        val bigTextStyle = NotificationCompat.BigTextStyle()
-        bigTextStyle.setBigContentTitle("Music player implemented by foreground service.")
-        bigTextStyle.bigText("Android foreground service is a android service which can run in foreground always, it can be controlled by user via notification.")
-        // Set big text style.
-        builder.setStyle(bigTextStyle)
-
-        builder.setWhen(System.currentTimeMillis())
-        builder.setSmallIcon(R.drawable.ic_menu_day)
-        val largeIconBitmap = BitmapFactory.decodeResource(resources, R.drawable.ic_media_next)
-        builder.setLargeIcon(largeIconBitmap)
-        // Make the notification max priority.
-        builder.priority = Notification.PRIORITY_MAX
-        // Make head-up notification.
-        builder.setFullScreenIntent(pendingIntent, true)
-
-        // Add Play button intent in notification.
-        val playIntent = Intent(this, ForeGroundService::class.java)
-        playIntent.action = ACTION_PLAY
-        val pendingPlayIntent = PendingIntent.getService(this, 0, playIntent, 0)
-        val playAction = NotificationCompat.Action(android.R.drawable.ic_media_play, "Play", pendingPlayIntent)
-        builder.addAction(playAction)
-
-        // Add Pause button intent in notification.
-        val pauseIntent = Intent(this, ForeGroundService::class.java)
-        pauseIntent.action = ACTION_PAUSE
-        val pendingPrevIntent = PendingIntent.getService(this, 0, pauseIntent, 0)
-        val prevAction = NotificationCompat.Action(android.R.drawable.ic_media_pause, "Pause", pendingPrevIntent)
-        builder.addAction(prevAction)
-
-        builder.setChannelId(NOTIFICATION_CHANNEL_ID)
-
-        // Build the notification.
-        val notification = builder.build()
-
-        // Start foreground service.
-        startForeground(1, notification)
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel(channelId: String, channelName: String): String {
+        val chan = NotificationChannel(
+            channelId,
+            channelName, NotificationManager.IMPORTANCE_NONE
+        )
+        chan.lightColor = Color.BLUE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        service.createNotificationChannel(chan)
+        return channelId
     }
 
-    private fun stopForegroundService() {
-        Log.d(TAG_FOREGROUND_SERVICE, "Stop foreground service.")
 
-        // Stop foreground service and remove the notification.
-        stopForeground(true)
-
-        // Stop the foreground service.
-        stopSelf()
-    }
-
-    companion object {
-
-        private val TAG_FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
-
-        val ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE"
-
-        val ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE"
-
-        val ACTION_PAUSE = "ACTION_PAUSE"
-
-        val ACTION_PLAY = "ACTION_PLAY"
-
-        val NOTIFICATION_CHANNEL_ID ="NOTIFICATION_CHANNEL_ID"
-    }
 }

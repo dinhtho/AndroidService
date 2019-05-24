@@ -27,12 +27,10 @@ class MainActivity : AppCompatActivity() {
         bt_unbind.setOnClickListener { unbindService(serviceConnection) }
 
         bt_start_foreground.setOnClickListener {
-            foregroundIntent.setAction(ForeGroundService.ACTION_START_FOREGROUND_SERVICE);
             startService(foregroundIntent)
         }
         bt_stop_foreground.setOnClickListener {
-            foregroundIntent.setAction(ForeGroundService.ACTION_STOP_FOREGROUND_SERVICE);
-            startService(foregroundIntent)
+            stopService(foregroundIntent)
         }
 
     }
@@ -51,17 +49,26 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "onServiceConnected: ");
         }
     }
-//
-//    @TargetApi(Build.VERSION_CODES.O)
-//    private fun moveToStartedState() {
-//        val intent = MyIntentBuilder(this)
-//            .setCommand(Command.START).build()
-//        if (isPreAndroidO()) {
-//            Log.d(FragmentActivity.TAG, "Running on Android N or lower")
-//            startService(intent)
-//        } else {
-//            Log.d(FragmentActivity.TAG, "Running on Android O")
-//            startForegroundService(intent)
+//    private fun startInForeground() {
+//        val notificationIntent = Intent(this, ForeGroundService::class.java)
+//        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+//        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+//            .setSmallIcon(R.drawable.shsl_notification)
+//            .setContentTitle("TEST")
+//            .setContentText("HELLO")
+//            .setTicker("TICKER")
+//            .setContentIntent(pendingIntent)
+//        val notification = builder.build()
+//        if (Build.VERSION.SDK_INT >= 26) {
+//            val channel = NotificationChannel(
+//                NOTIFICATION_CHANNEL_ID,
+//                NOTIFICATION_CHANNEL_NAME,
+//                NotificationManager.IMPORTANCE_DEFAULT
+//            )
+//            channel.description = NOTIFICATION_CHANNEL_DESC
+//            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//            notificationManager.createNotificationChannel(channel)
 //        }
+//        startForeground(NOTIFICATION_ID, notification)
 //    }
 }
